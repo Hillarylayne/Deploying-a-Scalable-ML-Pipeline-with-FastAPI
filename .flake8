@@ -1,0 +1,21 @@
+[flake8]
+max-line-length = 127
+exclude =
+    .git,
+    __pycache__,
+    fastapi,
+    model,
+    screenshots,
+    .venv,
+    venv
+
+# Ignore common starter-code noise
+ignore =
+    E261,  # inline comment spacing
+    E303,  # too many blank lines
+    E302,  # expected blank lines
+    E305,  # expected blank lines after def/class
+    W291,  # trailing whitespace
+    W391,  # blank line at EOF
+    F401,  # imported but unused (starter scripts often include this)
+    F841   # local variable assigned but never used
