@@ -3,26 +3,26 @@ from sklearn.preprocessing import LabelBinarizer, OneHotEncoder
 
 
 def process_data(
-    X, categorical_features=[], label=None, training=True, encoder=None, lb=None
+    X, categorical_features=None, label=None, training=True, encoder=None, lb=None
 ):
-    """ Process the data used in the machine learning pipeline.
+    """Process the data used in the machine learning pipeline.
 
     Processes the data using one hot encoding for the categorical features and a
     label binarizer for the labels. This can be used in either training or
     inference/validation.
 
-    Note: depending on the type of model used, you may want to add in functionality that
-    scales the continuous data.
+    Note: depending on the type of model used, you may want to add in functionality
+    that scales the continuous data.
 
     Inputs
     ------
     X : pd.DataFrame
-        Dataframe containing the features and label. Columns in `categorical_features`
-    categorical_features: list[str]
-        List containing the names of the categorical features (default=[])
+        Dataframe containing the features and label.
+    categorical_features : list[str]
+        List containing the names of the categorical features.
     label : str
         Name of the label column in `X`. If None, then an empty array will be returned
-        for y (default=None)
+        for y.
     training : bool
         Indicator if training mode or inference/validation mode.
     encoder : sklearn.preprocessing._encoders.OneHotEncoder
@@ -32,17 +32,19 @@ def process_data(
 
     Returns
     -------
-    X : np.array
+    X : np.ndarray
         Processed data.
-    y : np.array
+    y : np.ndarray
         Processed labels if labeled=True, otherwise empty np.array.
-    encoder : sklearn.preprocessing._encoders.OneHotEncoder
+    encoder : OneHotEncoder
         Trained OneHotEncoder if training is True, otherwise returns the encoder passed
         in.
-    lb : sklearn.preprocessing._label.LabelBinarizer
+    lb : LabelBinarizer
         Trained LabelBinarizer if training is True, otherwise returns the binarizer
         passed in.
     """
+    if categorical_features is None:
+        categorical_features = []
 
     if label is not None:
         y = X[label]
@@ -50,10 +52,11 @@ def process_data(
     else:
         y = np.array([])
 
+    # Split categorical and continuous features
     X_categorical = X[categorical_features].values
-    X_continuous = X.drop(*[categorical_features], axis=1)
+    X_continuous = X.drop(categorical_features, axis=1)
 
-    if training is True:
+    if training:
         encoder = OneHotEncoder(sparse_output=False, handle_unknown="ignore")
         lb = LabelBinarizer()
         X_categorical = encoder.fit_transform(X_categorical)
@@ -66,12 +69,13 @@ def process_data(
         except AttributeError:
             pass
 
-    X = np.concatenate([X_continuous, X_categorical], axis=1)
-    return X, y, encoder, lb
+    X_processed = np.concatenate([X_continuous, X_categorical], axis=1)
+    return X_processed, y, encoder, lb
+
 
 def apply_label(inference):
-    """ Convert the binary label in a single inference sample into string output."""
+    """Convert the binary label in a single inference sample into string output."""
     if inference[0] == 1:
         return ">50K"
-    elif inference[0] == 0:
-        return "<=50K"
+    return "<=50K"
+
